@@ -47,4 +47,4 @@ jobs:
           gotestsum_version: 1.8.2
 
       - name: Test
-        run: gotestsum --format short-verbose -- -race -timeout=2m
+        run: gotestsum --format short-verbose -- -race -timeout=2m ./...
