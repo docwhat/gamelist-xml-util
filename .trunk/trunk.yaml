@@ -21,6 +21,7 @@ runtimes:
     - node@18.12.1
 actions:
   enabled:
+    - go-mod-tidy
     - trunk-announce
     - trunk-check-pre-push
     - trunk-fmt-pre-commit
