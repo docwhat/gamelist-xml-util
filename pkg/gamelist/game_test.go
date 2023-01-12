@@ -1,13 +1,17 @@
-package gamelist
+package gamelist_test
 
 import (
 	"encoding/xml"
 	"reflect"
 	"strings"
 	"testing"
+
+	"docwhat.org/gamelist-xml-util/pkg/gamelist"
 )
 
 func Equal(t *testing.T, attr string, expected, got interface{}) {
+	t.Helper()
+
 	if !reflect.DeepEqual(expected, got) {
 		if attr == "" {
 			t.Fatalf("Expected %v, got %v", expected, got)
@@ -18,6 +22,8 @@ func Equal(t *testing.T, attr string, expected, got interface{}) {
 }
 
 func StartsWith(t *testing.T, attr string, expected, got string) {
+	t.Helper()
+
 	if !strings.HasPrefix(expected, got) {
 		if attr == "" {
 			t.Fatalf("Expected %v, got %v", expected, got)
@@ -29,16 +35,20 @@ func StartsWith(t *testing.T, attr string, expected, got string) {
 
 func subWrapper[T1 any, T2 any](f func(*testing.T, string, T1, T2)) func(*testing.T, string, T1, T2) {
 	return func(t *testing.T, attr string, expected T1, got T2) {
+		t.Helper()
 		t.Run(attr, func(t *testing.T) {
+			t.Parallel()
 			f(t, attr, expected, got)
 		})
 	}
 }
 
 func TestUnmarshal(t *testing.T) {
-	// An XML test string
+	t.Parallel()
 
-	game := Game{}
+	//nolint:exhaustruct
+	game := gamelist.Game{}
+
 	if err := xml.Unmarshal([]byte(tetris), &game); err != nil {
 		t.Error(err)
 	}
@@ -64,14 +74,27 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestRoundTrip(t *testing.T) {
-	game := Game{
+	t.Parallel()
+
+	game := gamelist.Game{
 		ID:     2976,
 		Source: "ScreenScraper.fr",
 		Path:   "./Tetris (World) (Rev A).zip",
 		Name:   "Tetris",
-		Desc: `This version of Tetris is one of many conversions of the famous block-stacking game, and was included with the Game Boy upon its release in several territories. The goal is to place pieces made up of four tiles in a ten-by-twenty well, organizing them into complete rows, which then disappear. As rows are cleared, the pace of the game increases and the background changes, and the game ends if the stack reaches the top of the well.
-
-The game is very similar to Nintendo's own NES version of the game, featuring the same "Type A" endless and "Type B" set-clear modes. The game also features a 2-player versus mode that can be played with two Game Boys, two copies of Tetris, and a Game Boy link cable. Clearing lines in this mode will cause the other player's stack to rise, with the goal being to make the other player lose.`,
+		Desc: `This version of Tetris is one of many conversions of the ` +
+			`famous block-stacking game, and was included with the Game Boy ` +
+			`upon its release in several territories. The goal is to place ` +
+			`pieces made up of four tiles in a ten-by-twenty well, organizing ` +
+			`them into complete rows, which then disappear. As rows are ` +
+			`cleared, the pace of the game increases and the background changes, ` +
+			`and the game ends if the stack reaches the top of the well.` +
+			"\n\n" +
+			`The game is very similar to Nintendo's own NES version of the ` +
+			`game, featuring the same "Type A" endless and "Type B" set-clear ` +
+			`modes. The game also features a 2-player versus mode that can be ` +
+			`played with two Game Boys, two copies of Tetris, and a Game Boy link ` +
+			`cable. Clearing lines in this mode will cause the other player's ` +
+			`stack to rise, with the goal being to make the other player lose.`,
 		Rating:      0.8,
 		ReleaseDate: "19890602T000000",
 		Lastplayed:  "20220401T092851",
@@ -81,7 +104,9 @@ The game is very similar to Nintendo's own NES version of the game, featuring th
 		Players:     "1-2",
 		Hash:        "46DF91AD",
 		Image:       "./Imgs/Tetris (World) (Rev A).png",
+		Thumbnail:   "./Imgs/Tetris (World) (Rev A) Thumbnail.png",
 		GenreID:     2816,
+		PlayCount:   321,
 	}
 
 	xmlText, err := xml.MarshalIndent(game, "", "  ")
@@ -89,8 +114,9 @@ The game is very similar to Nintendo's own NES version of the game, featuring th
 		t.Error(err)
 	}
 
-	roundTripGame := Game{}
-	if err := xml.Unmarshal([]byte(xmlText), &roundTripGame); err != nil {
+	//nolint:exhaustruct
+	roundTripGame := gamelist.Game{}
+	if err := xml.Unmarshal(xmlText, &roundTripGame); err != nil {
 		t.Error(err)
 	}
 

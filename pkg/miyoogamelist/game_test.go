@@ -1,8 +1,10 @@
-package miyoogamelist
+package miyoogamelist_test
 
 import (
 	"reflect"
 	"testing"
+
+	"docwhat.org/gamelist-xml-util/pkg/miyoogamelist"
 )
 
 type RandomStruct struct {
@@ -12,8 +14,8 @@ type RandomStruct struct {
 	Other string
 }
 
-func (r RandomStruct) GetMiyooData() Game {
-	return Game{
+func (r RandomStruct) GetMiyooData() miyoogamelist.Game {
+	return miyoogamelist.Game{
 		Path:  r.Path,
 		Name:  r.Name,
 		Image: r.Image,
@@ -21,6 +23,8 @@ func (r RandomStruct) GetMiyooData() Game {
 }
 
 func TestImport(t *testing.T) {
+	t.Parallel()
+
 	given := RandomStruct{
 		Path:  "./Path.zip",
 		Name:  "name",
@@ -28,13 +32,13 @@ func TestImport(t *testing.T) {
 		Other: "other",
 	}
 
-	expected := Game{
+	expected := miyoogamelist.Game{
 		Path:  "./Path.zip",
 		Name:  "name",
 		Image: "./Image.png",
 	}
 
-	gotten := GameImport(given)
+	gotten := miyoogamelist.GameImport(given)
 
 	if !reflect.DeepEqual(expected, gotten) {
 		t.Fatalf("Expected %v, got %v", expected, gotten)

@@ -5,20 +5,20 @@ type Game struct {
 	Name string `xml:"name"`
 	Desc string `xml:"desc"`
 
-	Image       string  `xml:"image,omitempty"`     // The path to the game's image.
-	Thumbnail   string  `xml:"thumbnail,omitempty"` // The path to the game's thumbnail image.
-	Rating      float32 `xml:"rating,omitempty"`
-	ReleaseDate string  `xml:"releasedate,omitempty"`
-	Developer   string  `xml:"developer,omitempty"`
-	Publisher   string  `xml:"publisher,omitempty"`
-	Genre       string  `xml:"genre,omitempty"`     // The (primary) genre for the game.
-	Players     string  `xml:"players,omitempty"`   // The number of players the game supports.
-	PlayCount   int     `xml:"playcount,omitempty"` // The number of times this game has been played
-	Lastplayed  string  `xml:"lastplayed,omitempty"`
+	Image       string  `xml:"image,omitempty" exhaustruct:"optional"`
+	Thumbnail   string  `xml:"thumbnail,omitempty" exhaustruct:"optional"`
+	Rating      float32 `xml:"rating,omitempty" exhaustruct:"optional"`
+	ReleaseDate string  `xml:"releasedate,omitempty" exhaustruct:"optional"`
+	Developer   string  `xml:"developer,omitempty" exhaustruct:"optional"`
+	Publisher   string  `xml:"publisher,omitempty" exhaustruct:"optional"`
+	Genre       string  `xml:"genre,omitempty" exhaustruct:"optional"`
+	Players     string  `xml:"players,omitempty" exhaustruct:"optional"`
+	PlayCount   int     `xml:"playcount,omitempty" exhaustruct:"optional"`
+	Lastplayed  string  `xml:"lastplayed,omitempty" exhaustruct:"optional"`
 
 	// Miyoo Mini/OnionOS Extensions
-	Hash    string `xml:"hash,omitempty"`
-	GenreID int    `xml:"genreid,omitempty"`
-	ID      int    `xml:"id,attr,omitempty"`
-	Source  string `xml:"source,attr,omitempty"`
+	Hash    string `xml:"hash,omitempty" exhaustruct:"optional"`
+	GenreID int    `xml:"genreid,omitempty" exhaustruct:"optional"`
+	ID      int    `xml:"id,attr,omitempty" exhaustruct:"optional"`
+	Source  string `xml:"source,attr,omitempty" exhaustruct:"optional"`
 }
