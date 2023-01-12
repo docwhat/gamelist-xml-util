@@ -1,6 +1,6 @@
-package main
+package gamelist
 
-type GameListGame struct {
+type Game struct {
 	Path string `xml:"path"`
 	Name string `xml:"name"`
 	Desc string `xml:"desc"`

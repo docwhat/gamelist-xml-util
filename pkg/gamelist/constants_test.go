@@ -1,4 +1,4 @@
-package main
+package gamelist
 
 const (
 	tetris = `<game id="2976" source="ScreenScraper.fr">

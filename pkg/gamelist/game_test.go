@@ -1,4 +1,4 @@
-package main
+package gamelist
 
 import (
 	"encoding/xml"
@@ -38,7 +38,7 @@ func subWrapper[T1 any, T2 any](f func(*testing.T, string, T1, T2)) func(*testin
 func TestUnmarshal(t *testing.T) {
 	// An XML test string
 
-	game := GameListGame{}
+	game := Game{}
 	if err := xml.Unmarshal([]byte(tetris), &game); err != nil {
 		t.Error(err)
 	}
@@ -64,7 +64,7 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestRoundTrip(t *testing.T) {
-	game := GameListGame{
+	game := Game{
 		ID:     2976,
 		Source: "ScreenScraper.fr",
 		Path:   "./Tetris (World) (Rev A).zip",
@@ -89,7 +89,7 @@ The game is very similar to Nintendo's own NES version of the game, featuring th
 		t.Error(err)
 	}
 
-	roundTripGame := GameListGame{}
+	roundTripGame := Game{}
 	if err := xml.Unmarshal([]byte(xmlText), &roundTripGame); err != nil {
 		t.Error(err)
 	}
