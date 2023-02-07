@@ -1,43 +1,52 @@
 package miyoogamelist_test
 
 import (
-	"docwhat.org/gamelist-xml-util/pkg/miyoogamelist"
+	"encoding/xml"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-type RandomStruct struct {
-	Path  string
-	Name  string
-	Image string
-	Other string
+type FileTestSuite struct {
+	suite.Suite
+	testdata string
 }
 
-func (r RandomStruct) GetMiyooData() miyoogamelist.Game {
-	return miyoogamelist.Game{
-		Path:  r.Path,
-		Name:  r.Name,
-		Image: r.Image,
-	}
+func (suite *FileTestSuite) SetupTest() {
+	topdir, err := os.Getwd()
+	suite.Require().NoError(err)
+
+	suite.testdata = filepath.Join(filepath.Dir(filepath.Dir(topdir)), "testdata", "miyoogamelist")
 }
 
-// func TestImport(t *testing.T) {
-// 	t.Parallel()
+func (suite *FileTestSuite) TestReadingWithTestData() {
+	err := filepath.Walk(suite.testdata, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 
-// 	given := RandomStruct{
-// 		Path:  "./Path.zip",
-// 		Name:  "name",
-// 		Image: "./Image.png",
-// 		Other: "other",
-// 	}
+		if info.Name() == "miyoogamelist.xml" {
+			var data interface{}
 
-// 	expected := miyoogamelist.Game{
-// 		Path:  "./Path.zip",
-// 		Name:  "name",
-// 		Image: "./Image.png",
-// 	}
+			xmlgamelist, err := os.ReadFile(path)
+			suite.Require().NoError(err)
+			suite.Require().Empty(xmlgamelist)
 
-// 	gotten := miyoogamelist.GameImport(given)
+			_ = xml.Unmarshal(xmlgamelist, &data)
 
-// 	if !reflect.DeepEqual(expected, gotten) {
-// 		t.Fatalf("Expected %v, got %v", expected, gotten)
-// 	}
-// }
+			suite.Require().NotEmpty(data)
+		}
+
+		return nil
+	})
+
+	suite.NoError(err)
+}
+
+func TestFileTestSuite(t *testing.T) {
+	t.Parallel()
+
+	suite.Run(t, new(FileTestSuite))
+}
