@@ -1,0 +1,18 @@
+linters:
+  enable-all: true
+  disable:
+    - deadcode
+    - exhaustivestruct
+    - golint
+    - ifshort
+    - interfacer
+    - maligned
+    - nosnakecase
+    - scopelint
+    - structcheck
+    - varcheck
+
+    # These are disabled because they do not support Generics, yet.
+    - rowserrcheck
+    - sqlclosecheck
+    - wastedassign
