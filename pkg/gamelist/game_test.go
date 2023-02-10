@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"docwhat.org/gamelist-xml-util/pkg/gamelist"
+	"github.com/stretchr/testify/assert"
 )
 
 func Equal(t *testing.T, attr string, expected, got interface{}) {
@@ -77,10 +78,11 @@ func TestRoundTrip(t *testing.T) {
 	t.Parallel()
 
 	game := gamelist.Game{
-		ID:     2976,
-		Source: "ScreenScraper.fr",
-		Path:   "./Tetris (World) (Rev A).zip",
-		Name:   "Tetris",
+		XMLName: xml.Name{Space: "", Local: "game"},
+		ID:      2976,
+		Source:  "ScreenScraper.fr",
+		Path:    "./Tetris (World) (Rev A).zip",
+		Name:    "Tetris",
 		Desc: `This version of Tetris is one of many conversions of the ` +
 			`famous block-stacking game, and was included with the Game Boy ` +
 			`upon its release in several territories. The goal is to place ` +
@@ -109,16 +111,15 @@ func TestRoundTrip(t *testing.T) {
 		PlayCount:   321,
 	}
 
-	xmlText, err := xml.MarshalIndent(game, "", "  ")
-	if err != nil {
-		t.Error(err)
+	var roundTripGame gamelist.Game
+
+	if xmlText, err := xml.MarshalIndent(game, "", "  "); err != nil {
+		t.Fatal(err)
+	} else {
+		if err := xml.Unmarshal(xmlText, &roundTripGame); err != nil {
+			t.Fatal(err)
+		}
 	}
 
-	//nolint:exhaustruct
-	roundTripGame := gamelist.Game{}
-	if err := xml.Unmarshal(xmlText, &roundTripGame); err != nil {
-		t.Error(err)
-	}
-
-	Equal(t, "XML", game, roundTripGame)
+	assert.Equal(t, game, roundTripGame)
 }

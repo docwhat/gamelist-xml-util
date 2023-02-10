@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"docwhat.org/gamelist-xml-util/pkg/miyoogamelist"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -28,15 +29,15 @@ func (suite *FileTestSuite) TestReadingWithTestData() {
 		}
 
 		if info.Name() == "miyoogamelist.xml" {
-			var data interface{}
+			var data miyoogamelist.GameList
 
-			xmlgamelist, err := os.ReadFile(path)
-			suite.Require().NoError(err)
-			suite.Require().Empty(xmlgamelist)
+			if xmlgamelist, err := os.ReadFile(path); err != nil {
+				suite.T().Fatalf("error reading %s: %v", path, err)
+			} else if err := xml.Unmarshal(xmlgamelist, &data); err != nil {
+				suite.T().Fatalf("error unmarshalling %s: %v", path, err)
+			}
 
-			_ = xml.Unmarshal(xmlgamelist, &data)
-
-			suite.Require().NotEmpty(data)
+			suite.NotEmpty(data.Games)
 		}
 
 		return nil

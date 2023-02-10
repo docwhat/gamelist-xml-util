@@ -6,9 +6,7 @@ var ErrFailedToImport = fmt.Errorf("failed to import")
 
 // Imports any struct that is miyoogamelist shaped by using reflection.
 func Import(unknownStruct map[string]interface{}) (*GameList, error) {
-	gameList := GameList{
-		Games: []Game{},
-	}
+	gameList := NewGameList()
 
 	unknownGameList, ok := unknownStruct["gameList"].([]interface{})
 	if !ok {
@@ -16,11 +14,7 @@ func Import(unknownStruct map[string]interface{}) (*GameList, error) {
 	}
 
 	for _, unknownGame := range unknownGameList {
-		game := Game{
-			Path:  "",
-			Name:  "",
-			Image: "",
-		}
+		game := NewGame("", "", "")
 
 		if path, ok := unknownGame.(map[string]string)["path"]; ok {
 			game.Path = path
