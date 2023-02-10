@@ -2,81 +2,52 @@ package gamelist_test
 
 import (
 	"encoding/xml"
-	"reflect"
-	"strings"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"docwhat.org/gamelist-xml-util/pkg/gamelist"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func Equal(t *testing.T, attr string, expected, got interface{}) {
-	t.Helper()
-
-	if !reflect.DeepEqual(expected, got) {
-		if attr == "" {
-			t.Fatalf("Expected %v, got %v", expected, got)
-		} else {
-			t.Fatalf("Expected %s to be %v, got %v", attr, expected, got)
-		}
-	}
+type GameListSuite struct {
+	suite.Suite
+	testdata string
 }
 
-func StartsWith(t *testing.T, attr string, expected, got string) {
-	t.Helper()
+func (suite *GameListSuite) SetupTest() {
+	topdir, err := os.Getwd()
+	suite.Require().NoError(err)
 
-	if !strings.HasPrefix(expected, got) {
-		if attr == "" {
-			t.Fatalf("Expected %v, got %v", expected, got)
-		} else {
-			t.Fatalf("Expected %s to be %v, got %v", attr, expected, got)
-		}
-	}
+	suite.testdata = filepath.Join(filepath.Dir(filepath.Dir(topdir)), "testdata", "miyoogamelist")
 }
 
-func subWrapper[T1 any, T2 any](f func(*testing.T, string, T1, T2)) func(*testing.T, string, T1, T2) {
-	return func(t *testing.T, attr string, expected T1, got T2) {
-		t.Helper()
-		t.Run(attr, func(t *testing.T) {
-			t.Parallel()
-			f(t, attr, expected, got)
-		})
-	}
-}
-
-func TestUnmarshal(t *testing.T) {
-	t.Parallel()
-
+func (suite *GameListSuite) TestUnmarshal() {
 	//nolint:exhaustruct
 	game := gamelist.Game{}
 
 	if err := xml.Unmarshal([]byte(tetris), &game); err != nil {
-		t.Error(err)
+		suite.FailNow("error unmarshalling: %w", err)
 	}
 
-	sEqual := subWrapper(Equal)
-	sStartsWith := subWrapper(StartsWith)
-
-	sEqual(t, "ID", game.ID, int(2976))
-	sEqual(t, "Source", game.Source, "ScreenScraper.fr")
-	sEqual(t, "Path", game.Path, "./Tetris (World) (Rev A).zip")
-	sEqual(t, "Name", game.Name, "Tetris")
-	sStartsWith(t, "Desc", game.Desc, "This version of Tetris is")
-	sEqual(t, "Rating", game.Rating, float32(0.8))
-	sEqual(t, "ReleaseDate", game.ReleaseDate, "19890602T000000")
-	sEqual(t, "Lastplayed", game.Lastplayed, "20220401T092851")
-	sEqual(t, "Developer", game.Developer, "Nintendo")
-	sEqual(t, "Publisher", game.Publisher, "Nintendo")
-	sEqual(t, "Genre", game.Genre, "Puzzle-Game / Fall-Puzzle-Game")
-	sEqual(t, "Players", game.Players, "1-2")
-	sEqual(t, "Hash", game.Hash, "46DF91AD")
-	sEqual(t, "Image", game.Image, "./Imgs/Tetris (World) (Rev A).png")
-	sEqual(t, "GenreID", game.GenreID, int(2816))
+	suite.Equal(game.ID, int(2976))
+	suite.Equal(game.Source, "ScreenScraper.fr")
+	suite.Equal(game.Path, "./Tetris (World) (Rev A).zip")
+	suite.Equal(game.Name, "Tetris")
+	suite.Contains(game.Desc, "This version of Tetris is")
+	suite.Equal(game.Rating, float32(0.8))
+	suite.Equal(game.ReleaseDate, "19890602T000000")
+	suite.Equal(game.Lastplayed, "20220401T092851")
+	suite.Equal(game.Developer, "Nintendo")
+	suite.Equal(game.Publisher, "Nintendo")
+	suite.Equal(game.Genre, "Puzzle-Game / Fall-Puzzle-Game")
+	suite.Equal(game.Players, "1-2")
+	suite.Equal(game.Hash, "46DF91AD")
+	suite.Equal(game.Image, "./Imgs/Tetris (World) (Rev A).png")
+	suite.Equal(game.GenreID, int(2816))
 }
 
-func TestRoundTrip(t *testing.T) {
-	t.Parallel()
-
+func (suite *GameListSuite) TestRoundTrip() {
 	game := gamelist.Game{
 		XMLName: xml.Name{Space: "", Local: "game"},
 		ID:      2976,
@@ -114,12 +85,42 @@ func TestRoundTrip(t *testing.T) {
 	var roundTripGame gamelist.Game
 
 	if xmlText, err := xml.MarshalIndent(game, "", "  "); err != nil {
-		t.Fatal(err)
-	} else {
-		if err := xml.Unmarshal(xmlText, &roundTripGame); err != nil {
-			t.Fatal(err)
-		}
+		suite.FailNow("error marshalling: %w", err)
+	} else if err := xml.Unmarshal(xmlText, &roundTripGame); err != nil {
+		suite.FailNow("error unmarshalling %v: %w", game, err)
 	}
 
-	assert.Equal(t, game, roundTripGame)
+	suite.Equal(game, roundTripGame)
+}
+
+func (suite *GameListSuite) TestReadingWithTestData() {
+	err := filepath.Walk(suite.testdata, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.Name() == "miyoogamelist.xml" {
+			suite.Run(filepath.Base(filepath.Dir(path)), func() {
+				var data gamelist.GameList
+
+				if xmlgamelist, err := os.ReadFile(path); err != nil {
+					suite.FailNowf("error reading %s: %w", path, err)
+				} else if err := xml.Unmarshal(xmlgamelist, &data); err != nil {
+					suite.FailNowf("error unmarshalling %s: %w", path, err)
+				}
+
+				suite.NotEmpty(data.Games)
+			})
+		}
+
+		return nil
+	})
+
+	suite.NoError(err)
+}
+
+func TestGameList(t *testing.T) {
+	t.Parallel()
+
+	suite.Run(t, new(GameListSuite))
 }
