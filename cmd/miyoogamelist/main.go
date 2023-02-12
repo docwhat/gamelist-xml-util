@@ -7,13 +7,10 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
-const (
-	version = "unknown"
-)
+var version = "unknown"
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "gamelist2miyoogamelist"
 	app.Usage = "Cleans up miyoogamelist.xml files"
 	app.Authors = []*cli.Author{
 		{
