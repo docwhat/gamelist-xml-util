@@ -5,11 +5,24 @@ import "encoding/xml"
 type GameList struct {
 	XMLName xml.Name `xml:"gameList"`
 
-	Games []Game `xml:"game"`
+	Provider Provider `xml:"provider,omitempty" exhaustruct:"optional"`
+	Games    []Game   `xml:"game"`
+}
+
+type Provider struct {
+	XMLName xml.Name `xml:"provider,omitempty"`
+
+	System   string `xml:"System,omitempty" exhaustruct:"optional"`
+	Software string `xml:"software,omitempty" exhaustruct:"optional"`
+	Database string `xml:"database,omitempty" exhaustruct:"optional"`
+	Web      string `xml:"web,omitempty" exhaustruct:"optional"`
 }
 
 type Game struct {
 	XMLName xml.Name `xml:"game"`
+
+	ID     string `xml:"id,attr,omitempty" exhaustruct:"optional"`
+	Source string `xml:"source,attr,omitempty" exhaustruct:"optional"`
 
 	Path  string `xml:"path"`
 	Name  string `xml:"name"`

@@ -18,7 +18,7 @@ func main() {
 			Email: "docwhat@gerf.org",
 		},
 	}
-	app.UsageText = "miyoogamelist-cleaner [options] <gamelist.xml>"
+	app.UsageText = "miyoogamelist [options] <gamelist.xml>"
 	app.Version = version
 
 	app.Action = action

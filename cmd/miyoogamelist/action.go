@@ -50,7 +50,7 @@ func parseFile(filename string) (miyoogamelist.GameList, error) {
 }
 
 func writeFile(file fileWriter, gamelist miyoogamelist.GameList) error {
-	strippedData, err := xml.MarshalIndent(gamelist, "", "\t")
+	strippedData, err := xml.MarshalIndent(gamelist, "", "  ")
 	if err != nil {
 		return fmt.Errorf("unable to marshal %w", err)
 	}
