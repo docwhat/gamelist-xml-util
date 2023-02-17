@@ -1,9 +1,11 @@
 package gamelist_test
 
 import (
+	"bytes"
 	"encoding/xml"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"docwhat.org/gamelist-xml-util/pkg/gamelist"
@@ -117,6 +119,90 @@ func (suite *GameListSuite) TestReadingWithTestData() {
 	})
 
 	suite.NoError(err)
+}
+
+// This tests the Load() function by passing in a Reader containing a gamelist
+// XML.
+func (suite *GameListSuite) TestLoad() {
+	xmlText := `<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<gameList>
+	<provider>
+		<System>Game Boy Color</System>
+		<software>Skraper</software>
+		<database>ScreenScraper.fr</database>
+		<web>http://www.screenscraper.fr</web>
+	</provider>
+	<game id="36846" source="ScreenScraper.fr">
+		<path>./007 - The World Is Not Enough (USA, Europe).zip</path>
+		<name>007: The World is Not Enough</name>
+		<desc>It seems that an MI-6 agent has been killed just before</desc>
+		<rating>0.75</rating>
+		<releasedate>20010911T000000</releasedate>
+		<developer>2n Productions</developer>
+		<publisher>Electronic Arts</publisher>
+		<genre>Shooter-Action</genre>
+		<players>1-2</players>
+		<hash>E038E666</hash>
+		<image>./Imgs/007 - The World Is Not Enough (USA, Europe).png</image>
+		<genreid>256</genreid>
+	</game>
+</gameList>`
+
+	gameList, err := gamelist.Load(strings.NewReader(xmlText))
+	suite.Require().NoError(err)
+
+	game := gameList.Games[0]
+	provider := gameList.Provider
+
+	suite.Equal("Game Boy Color", provider.System)
+	suite.Equal("Skraper", provider.Software)
+	suite.Equal("ScreenScraper.fr", provider.Database)
+	suite.Equal("http://www.screenscraper.fr", provider.Web)
+
+	suite.Equal("007: The World is Not Enough", game.Name)
+	suite.Equal("./007 - The World Is Not Enough (USA, Europe).zip", game.Path)
+	suite.Equal("It seems that an MI-6 agent has been killed just before", game.Desc)
+	suite.Equal("20010911T000000", game.ReleaseDate)
+	suite.Equal(float32(0.75), game.Rating)
+	suite.Equal("2n Productions", game.Developer)
+	suite.Equal("Electronic Arts", game.Publisher)
+	suite.Equal("Shooter-Action", game.Genre)
+	suite.Equal("1-2", game.Players)
+	suite.Equal("E038E666", game.Hash)
+	suite.Equal("./Imgs/007 - The World Is Not Enough (USA, Europe).png", game.Image)
+	suite.Equal(256, game.GenreID)
+}
+
+func (suite *GameListSuite) TestLoadWithInvalidXML() {
+	_, err := gamelist.Load(strings.NewReader("invalid xml"))
+	suite.Error(err)
+}
+
+func (suite *GameListSuite) TestWrite() {
+	gameList := gamelist.NewGameList()
+
+	path := "./path/to/rom.zip"
+	suite.Require().NoError(gameList.AddGame(path))
+
+	var buf bytes.Buffer
+
+	suite.Require().NoError(gameList.Write(&buf))
+
+	suite.Require().NotEmpty(buf.String())
+	suite.Contains(buf.String(), path)
+}
+
+func (suite *GameListSuite) TestAddGame() {
+	gameList := gamelist.NewGameList()
+	path := "./path/to/rom.zip"
+
+	suite.Require().NoError(gameList.AddGame(path))
+
+	suite.Require().NotEmpty(gameList.Games)
+	suite.Equal(path, gameList.Games[0].Path)
+	suite.Equal("rom", gameList.Games[0].Name)
+	suite.Equal("", gameList.Games[0].Desc)
 }
 
 func TestGameList(t *testing.T) {

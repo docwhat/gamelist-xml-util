@@ -1,15 +1,30 @@
 package gamelist
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"fmt"
+	"io"
+	"path/filepath"
+)
 
 type GameList struct {
-	XMLName xml.Name `xml:"gameList"`
+	XMLName xml.Name `xml:"gameList" exhaustruct:"optional"`
 
-	Games []Game `xml:"game"`
+	Provider Provider `xml:"provider,omitempty" exhaustruct:"optional"`
+	Games    []Game   `xml:"game"`
+}
+
+type Provider struct {
+	XMLName xml.Name `xml:"provider" exhaustruct:"optional"`
+
+	System   string `xml:"System,omitempty" exhaustruct:"optional"`
+	Software string `xml:"software,omitempty" exhaustruct:"optional"`
+	Database string `xml:"database,omitempty" exhaustruct:"optional"`
+	Web      string `xml:"web,omitempty" exhaustruct:"optional"`
 }
 
 type Game struct {
-	XMLName xml.Name `xml:"game"`
+	XMLName xml.Name `xml:"game" exhaustruct:"optional"`
 
 	Path string `xml:"path"`
 	Name string `xml:"name"`
@@ -31,4 +46,64 @@ type Game struct {
 	GenreID int    `xml:"genreid,omitempty" exhaustruct:"optional"`
 	ID      int    `xml:"id,attr,omitempty" exhaustruct:"optional"`
 	Source  string `xml:"source,attr,omitempty" exhaustruct:"optional"`
+}
+
+// NewGameList returns a new empty &GameList.
+func NewGameList() *GameList {
+	return &GameList{
+		Provider: Provider{},
+		Games:    []Game{},
+	}
+}
+
+func NewGame(name, path, desc string) Game {
+	return Game{
+		Path: path,
+		Name: name,
+		Desc: desc,
+	}
+}
+
+// Load takes an io.Reader and returns a GameList.
+func Load(r io.Reader) (*GameList, error) {
+	gamelist := NewGameList()
+
+	if err := xml.NewDecoder(r).Decode(gamelist); err != nil {
+		return nil, fmt.Errorf("unable to parse gamelist: %w", err)
+	}
+
+	return gamelist, nil
+}
+
+func (g *GameList) AddGame(path string) error {
+	// Strip directory
+	name := filepath.Base(path)
+	// Strip extension
+	name = name[:len(name)-len(filepath.Ext(name))]
+
+	game := NewGame(name, path, "")
+	g.Games = append(g.Games, game)
+
+	return nil
+}
+
+// Write takes an io.Writer and writes the GameList to it.
+func (g *GameList) Write(writer io.Writer) error {
+	_, err := writer.Write([]byte(xml.Header))
+	if err != nil {
+		return fmt.Errorf("unable to write XML header: %w", err)
+	}
+
+	enc := xml.NewEncoder(writer)
+	enc.Indent("", "  ")
+
+	if err := enc.Encode(g); err != nil {
+		return fmt.Errorf("unable to write gamelist: %w", err)
+	}
+
+	return nil
+}
+
+func (g *Game) AddImage(romsDir string) error {
+	return nil
 }
