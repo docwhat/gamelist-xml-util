@@ -3,21 +3,6 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - id: "myioogamelist"
-    main: "./cmd/miyoogamelist"
-    binary: "miyoogamelist"
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-    ignore:
-      - goos: windows
-        goarch: arm64
   - id: "cli"
     main: "./cmd/cli"
     binary: "gamelist-cli"
@@ -35,7 +20,6 @@ builds:
         goarch: arm64
 archives:
   - builds:
-      - myioogamelist
       - cli
     format: binary
 checksum:
@@ -48,6 +32,8 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+      - "^ci:"
+      - "^chore:"
 release:
   github:
     owner: "docwhat"
