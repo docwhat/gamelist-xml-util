@@ -7,6 +7,7 @@ linters:
     - ifshort
     - interfacer
     - maligned
+    - musttag
     - nosnakecase
     - scopelint
     - structcheck
