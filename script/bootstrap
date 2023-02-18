@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -eu
+
+die() {
+	echo "FATAL: $1" >&2
+	exit 1
+}
+
+root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly root_dir
+
+cd "$root_dir" || die "Could not cd to $root_dir"
+
+# Verify `direnv` is installed and enabled.
+if ! command -v direnv &>/dev/null; then
+	die "direnv is not installed. Please install it and try again. https://direnv.net/docs/installation.html"
+fi
+
+# Ensure `direnv` is enabled.
+if ! direnv allow; then
+	die "direnv is not configured correctly. Please enable it and try again. https://direnv.net/docs/hook.html"
+fi
+
+# Verify `trunk` is installed.
+if ! command -v trunk &>/dev/null; then
+	die "trunk is not installed. Please install it and try again. https://docs.trunk.io/docs/install"
+fi
+
+if ! trunk install; then
+	die "trunk is not configured correctly. Please enable it and try again. https://docs.trunk.io/docs/install"
+fi
