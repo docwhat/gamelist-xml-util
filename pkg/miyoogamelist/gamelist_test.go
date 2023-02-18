@@ -1,7 +1,6 @@
 package miyoogamelist_test
 
 import (
-	"encoding/xml"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,12 +10,12 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type FileTestSuite struct {
+type GameListSuite struct {
 	suite.Suite
 	TestData string
 }
 
-func (suite *FileTestSuite) SetupTest() {
+func (suite *GameListSuite) SetupTest() {
 	topdir, err := os.Getwd()
 	suite.Require().NoError(err)
 
@@ -68,22 +67,19 @@ func (suite *GameListSuite) TestLoad() {
 	suite.Equal("./Imgs/007 - The World Is Not Enough (USA, Europe).png", game.Image)
 }
 
-func (suite *FileTestSuite) TestReadingWithTestData() {
+func (suite *GameListSuite) TestReadingWithTestData() {
 	err := filepath.Walk(suite.TestData, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
 		if info.Name() == "miyoogamelist.xml" {
-			var data miyoogamelist.GameList
+			gameList, err := miyoogamelist.LoadFile(path)
+			suite.Require().NoError(err)
 
-			if xmlgamelist, err := os.ReadFile(path); err != nil {
-				suite.T().Fatalf("error reading %s: %v", path, err)
-			} else if err := xml.Unmarshal(xmlgamelist, &data); err != nil {
-				suite.T().Fatalf("error unmarshalling %s: %v", path, err)
-			}
-
-			suite.NotEmpty(data.Games)
+			suite.NotEmpty(gameList)
+			suite.NotEmpty(gameList.Provider.System)
+			suite.NotEmpty(gameList.Games)
 		}
 
 		return nil
@@ -95,5 +91,5 @@ func (suite *FileTestSuite) TestReadingWithTestData() {
 func TestFileTestSuite(t *testing.T) {
 	t.Parallel()
 
-	suite.Run(t, new(FileTestSuite))
+	suite.Run(t, new(GameListSuite))
 }

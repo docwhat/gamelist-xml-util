@@ -37,5 +37,5 @@ func Import(unknownStruct map[string]interface{}) (*GameList, error) {
 		gameList.Games = append(gameList.Games, game)
 	}
 
-	return &gameList, nil
+	return gameList, nil
 }

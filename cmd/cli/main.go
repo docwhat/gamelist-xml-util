@@ -7,51 +7,56 @@ import (
 	"path/filepath"
 
 	"docwhat.org/gamelist-xml-util/pkg/gamelist"
-	cli "github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2"
 )
 
 var version = "unknown"
 
 func main() {
-	app := cli.NewApp()
-	app.Usage = "CLI for managing and manipulating game list data"
-	app.Authors = []*cli.Author{
-		{
-			Name:  "Christian Höltje",
-			Email: "docwhat@gerf.org",
+	//nolint:exhaustruct
+	app := &cli.App{
+		Name:      "gamelist-cli",
+		Usage:     "CLI for managing and manipulating ROM gamelist data files",
+		UsageText: "gamelist-cli [options] [gamelist.xml]",
+		Authors: []*cli.Author{
+			{
+				Name:  "Christian Höltje",
+				Email: "docwhat@gerf.org",
+			},
 		},
+		Suggest:                true,
+		UseShortOptionHandling: true,
+		Flags: []cli.Flag{
+			//nolint:exhaustruct
+			&cli.PathFlag{
+				Name:    "output",
+				Aliases: []string{"o"},
+				Value:   "-",
+				Usage:   "write output to `FILE`; use \"-\" for stdout",
+			},
+			//nolint:exhaustruct
+			&cli.PathFlag{
+				Name:    "roms",
+				Aliases: []string{"r"},
+				Value:   "",
+				Usage:   "path to ROMs `DIR` (default: gamelist.xml dir or current dir if gamelist.xml is stdin)",
+			},
+			//nolint:exhaustruct
+			&cli.BoolFlag{
+				Name:    "add-roms",
+				Aliases: []string{"a"},
+				Usage:   "add games from ROMs directory to gamelist.xml that are not in the gamelist.xml",
+			},
+			//nolint:exhaustruct
+			&cli.BoolFlag{
+				Name:    "add-images",
+				Aliases: []string{"i"},
+				Usage:   "add images to games in gamelist.xml that are missing an image but the image exists in ROMs directory",
+			},
+		},
+		Version: version,
+		Action:  action,
 	}
-	app.Flags = []cli.Flag{
-		//nolint:exhaustruct
-		&cli.StringFlag{
-			Name:    "output",
-			Aliases: []string{"o"},
-			Value:   "-",
-			Usage:   "path to output file (use '-' for stdout)",
-		},
-		//nolint:exhaustruct
-		&cli.StringFlag{
-			Name:    "roms",
-			Aliases: []string{"r"},
-			Value:   "",
-			Usage:   "path to ROMs directory (default: gamelist.xml dir or current dir if gamelist.xml is stdin)",
-		},
-		//nolint:exhaustruct
-		&cli.BoolFlag{
-			Name:    "add-roms",
-			Aliases: []string{"a"},
-			Usage:   "add games from ROMs directory to gamelist.xml that are not in the gamelist.xml",
-		},
-		//nolint:exhaustruct
-		&cli.BoolFlag{
-			Name:    "add-images",
-			Aliases: []string{"i"},
-			Usage:   "add images to games in gamelist.xml that are missing an image but the image exists in ROMs directory",
-		},
-	}
-	app.Version = version
-
-	app.Action = action
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

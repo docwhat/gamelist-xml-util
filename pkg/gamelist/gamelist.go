@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 )
 
@@ -64,6 +65,22 @@ func NewGame(name, path, desc string) Game {
 	}
 }
 
+func (g *GameList) AddGame(path string) error {
+	// Strip directory
+	name := filepath.Base(path)
+	// Strip extension
+	name = name[:len(name)-len(filepath.Ext(name))]
+
+	game := NewGame(name, path, "")
+	g.Games = append(g.Games, game)
+
+	return nil
+}
+
+func (g *Game) AddImage(romsDir string) error {
+	return nil
+}
+
 // Load takes an io.Reader and returns a GameList.
 func Load(r io.Reader) (*GameList, error) {
 	gamelist := NewGameList()
@@ -75,16 +92,14 @@ func Load(r io.Reader) (*GameList, error) {
 	return gamelist, nil
 }
 
-func (g *GameList) AddGame(path string) error {
-	// Strip directory
-	name := filepath.Base(path)
-	// Strip extension
-	name = name[:len(name)-len(filepath.Ext(name))]
+// LoadFile reads the XML data from the given file and returns a GameList.
+func LoadFile(path string) (*GameList, error) {
+	gameListFile, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open gamelist XML file: %w", err)
+	}
 
-	game := NewGame(name, path, "")
-	g.Games = append(g.Games, game)
-
-	return nil
+	return Load(gameListFile)
 }
 
 // Write takes an io.Writer and writes the GameList to it.
@@ -104,6 +119,13 @@ func (g *GameList) Write(writer io.Writer) error {
 	return nil
 }
 
-func (g *Game) AddImage(romsDir string) error {
-	return nil
+// WriteFile writes the GameList to the given file path.
+func (g *GameList) WriteFile(path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("unable to create file: %w", err)
+	}
+	defer file.Close()
+
+	return g.Write(file)
 }
