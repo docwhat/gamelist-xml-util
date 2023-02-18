@@ -149,7 +149,7 @@ func (suite *GameListSuite) TestLoad() {
 	</game>
 </gameList>`
 
-	gameList, err := gamelist.Load(strings.NewReader(xmlText))
+	gameList, err := gamelist.LoadXML(strings.NewReader(xmlText))
 	suite.Require().NoError(err)
 
 	game := gameList.Games[0]
@@ -175,7 +175,7 @@ func (suite *GameListSuite) TestLoad() {
 }
 
 func (suite *GameListSuite) TestLoadWithInvalidXML() {
-	_, err := gamelist.Load(strings.NewReader("invalid xml"))
+	_, err := gamelist.LoadXML(strings.NewReader("invalid xml"))
 	suite.Error(err)
 }
 
@@ -187,7 +187,7 @@ func (suite *GameListSuite) TestWrite() {
 
 	var buf bytes.Buffer
 
-	suite.Require().NoError(gameList.Write(&buf))
+	suite.Require().NoError(gameList.WriteXML(&buf))
 
 	suite.Require().NotEmpty(buf.String())
 	suite.Contains(buf.String(), path)

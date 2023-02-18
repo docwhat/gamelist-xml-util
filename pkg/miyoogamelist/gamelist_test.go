@@ -6,26 +6,12 @@ import (
 	"strings"
 	"testing"
 
+	"docwhat.org/gamelist-xml-util/pkg/gamelist"
 	"docwhat.org/gamelist-xml-util/pkg/miyoogamelist"
 	"github.com/stretchr/testify/suite"
 )
 
-type GameListSuite struct {
-	suite.Suite
-	TestData string
-}
-
-func (suite *GameListSuite) SetupTest() {
-	topdir, err := os.Getwd()
-	suite.Require().NoError(err)
-
-	suite.TestData = filepath.Join(filepath.Dir(filepath.Dir(topdir)), "testdata", "miyoogamelist")
-}
-
-// This tests the Load() function by passing in a Reader containing a gamelist
-// XML.
-func (suite *GameListSuite) TestLoad() {
-	xmlText := `<?xml version="1.0" encoding="UTF-8"?>
+const GB007 = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <gameList>
 	<provider>
@@ -50,17 +36,65 @@ func (suite *GameListSuite) TestLoad() {
 	</game>
 </gameList>`
 
-	gameList, err := miyoogamelist.Load(strings.NewReader(xmlText))
+type GameListSuite struct {
+	suite.Suite
+	TestData string
+}
+
+func (suite *GameListSuite) SetupTest() {
+	topdir, err := os.Getwd()
 	suite.Require().NoError(err)
+
+	suite.TestData = filepath.Join(filepath.Dir(filepath.Dir(topdir)), "testdata", "miyoogamelist")
+}
+
+// This tests the Load() function by passing in a Reader containing a gamelist
+// XML.
+func (suite *GameListSuite) TestLoad() {
+	// Load a gamelist as a miyoogamelist.
+	gameList, err := miyoogamelist.LoadXML(strings.NewReader(GB007))
+	suite.Require().NoError(err)
+
+	// Verify there is only one game (007)
+	suite.Len(gameList.Games, 1)
 
 	game := gameList.Games[0]
 	provider := gameList.Provider
 
+	// Check the provider.
 	suite.Equal("Game Boy Color", provider.System)
 	suite.Equal("Skraper", provider.Software)
 	suite.Equal("ScreenScraper.fr", provider.Database)
 	suite.Equal("http://www.screenscraper.fr", provider.Web)
 
+	// Check that the world is enough.
+	suite.Equal("007: The World is Not Enough", game.Name)
+	suite.Equal("./007 - The World Is Not Enough (USA, Europe).zip", game.Path)
+	suite.Equal("E038E666", game.Hash)
+	suite.Equal("./Imgs/007 - The World Is Not Enough (USA, Europe).png", game.Image)
+}
+
+func (suite *GameListSuite) TestDowngrade() {
+	// Get a gamelist.
+	gameList, err := gamelist.LoadXML(strings.NewReader(GB007))
+	suite.Require().NoError(err)
+
+	// Downgrade it to a miyooGameList.
+	miyooGameList := miyoogamelist.Downgrade(gameList)
+
+	// Verify there is only one game (007)
+	suite.Len(miyooGameList.Games, 1)
+
+	game := miyooGameList.Games[0]
+	provider := miyooGameList.Provider
+
+	// Verity the provider.
+	suite.Equal("Game Boy Color", provider.System)
+	suite.Equal("Skraper", provider.Software)
+	suite.Equal("ScreenScraper.fr", provider.Database)
+	suite.Equal("http://www.screenscraper.fr", provider.Web)
+
+	// Check that the world is enough.
 	suite.Equal("007: The World is Not Enough", game.Name)
 	suite.Equal("./007 - The World Is Not Enough (USA, Europe).zip", game.Path)
 	suite.Equal("E038E666", game.Hash)
@@ -74,7 +108,7 @@ func (suite *GameListSuite) TestReadingWithTestData() {
 		}
 
 		if info.Name() == "miyoogamelist.xml" {
-			gameList, err := miyoogamelist.LoadFile(path)
+			gameList, err := miyoogamelist.LoadXMLFile(path)
 			suite.Require().NoError(err)
 
 			suite.NotEmpty(gameList)

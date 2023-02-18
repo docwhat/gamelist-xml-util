@@ -7,11 +7,16 @@ import (
 	"path/filepath"
 
 	"docwhat.org/gamelist-xml-util/pkg/gamelist"
+	"docwhat.org/gamelist-xml-util/pkg/miyoogamelist"
 	"github.com/urfave/cli/v2"
 )
 
 var version = "unknown"
 
+// ErrUnknownFormat is returned when the format specified via the command line is not known.
+var ErrUnknownFormat = fmt.Errorf("unknown format")
+
+//nolint:funlen // this is almost entirely configuring CLI flags.
 func main() {
 	//nolint:exhaustruct
 	app := &cli.App{
@@ -40,6 +45,20 @@ func main() {
 				Aliases: []string{"r"},
 				Value:   "",
 				Usage:   "path to ROMs `DIR` (default: gamelist.xml dir or current dir if gamelist.xml is stdin)",
+			},
+			&cli.StringFlag{
+				Name:    "format",
+				Aliases: []string{"f"},
+				Value:   "gamelist-xml",
+				Usage:   "output format (gamelist-xml, miyoogamelist-xml)",
+				Action: func(ctx *cli.Context, format string) error {
+					switch format {
+					case "gamelist-xml", "miyoogamelist-xml":
+						return nil
+					default:
+						return fmt.Errorf("unknown format %q: %w", format, ErrUnknownFormat)
+					}
+				},
 			},
 			//nolint:exhaustruct
 			&cli.BoolFlag{
@@ -88,7 +107,7 @@ func action(ctx *cli.Context) error {
 	romsPath := getRomsDir(ctx.String("roms"), gamelistPath)
 
 	// Load gameList.xml
-	gameList, err := gamelist.Load(gamelistReader)
+	gameList, err := gamelist.LoadXML(gamelistReader)
 	if err != nil {
 		return fmt.Errorf("unable to load gamelist.xml: %w", err)
 	}
@@ -108,10 +127,25 @@ func action(ctx *cli.Context) error {
 		}
 	}
 
-	// Write gamelist.xml to output
-	err = gameList.Write(outputWriter)
+	return writeFormat(ctx.String("format"), gameList, outputWriter)
+}
+
+func writeFormat(format string, gameList *gamelist.GameList, outputWriter *os.File) error {
+	var err error
+
+	switch format {
+	case "gamelist-xml":
+		// Write gamelist.xml to output
+		err = gameList.WriteXML(outputWriter)
+	case "miyoogamelist-xml":
+		// Write miyoo gamelist.xml to output
+		err = miyoogamelist.Downgrade(gameList).WriteXML(outputWriter)
+	default:
+		panic("programming error; please recycle the programmer.")
+	}
+
 	if err != nil {
-		return fmt.Errorf("unable to write gamelist.xml: %w", err)
+		return fmt.Errorf("unable to write %s: %w", format, err)
 	}
 
 	return nil

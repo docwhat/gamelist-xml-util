@@ -2,9 +2,6 @@ package gamelist
 
 import (
 	"encoding/xml"
-	"fmt"
-	"io"
-	"os"
 	"path/filepath"
 )
 
@@ -79,53 +76,4 @@ func (g *GameList) AddGame(path string) error {
 
 func (g *Game) AddImage(romsDir string) error {
 	return nil
-}
-
-// Load takes an io.Reader and returns a GameList.
-func Load(r io.Reader) (*GameList, error) {
-	gamelist := NewGameList()
-
-	if err := xml.NewDecoder(r).Decode(gamelist); err != nil {
-		return nil, fmt.Errorf("unable to parse gamelist: %w", err)
-	}
-
-	return gamelist, nil
-}
-
-// LoadFile reads the XML data from the given file and returns a GameList.
-func LoadFile(path string) (*GameList, error) {
-	gameListFile, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("unable to open gamelist XML file: %w", err)
-	}
-
-	return Load(gameListFile)
-}
-
-// Write takes an io.Writer and writes the GameList to it.
-func (g *GameList) Write(writer io.Writer) error {
-	_, err := writer.Write([]byte(xml.Header))
-	if err != nil {
-		return fmt.Errorf("unable to write XML header: %w", err)
-	}
-
-	enc := xml.NewEncoder(writer)
-	enc.Indent("", "  ")
-
-	if err := enc.Encode(g); err != nil {
-		return fmt.Errorf("unable to write gamelist: %w", err)
-	}
-
-	return nil
-}
-
-// WriteFile writes the GameList to the given file path.
-func (g *GameList) WriteFile(path string) error {
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("unable to create file: %w", err)
-	}
-	defer file.Close()
-
-	return g.Write(file)
 }
