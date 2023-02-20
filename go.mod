@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/kjk/lzmadec v0.0.0-20210713164611-19ac3ee91a71
 	github.com/stretchr/testify v1.8.1
-	github.com/urfave/cli/v2 v2.24.3
+	github.com/urfave/cli/v2 v2.24.4
 )
 
 require (
