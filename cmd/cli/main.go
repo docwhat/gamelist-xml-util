@@ -8,6 +8,7 @@ import (
 
 	"docwhat.org/gamelist-xml-util/pkg/gamelist"
 	"docwhat.org/gamelist-xml-util/pkg/miyoogamelist"
+	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
 )
 
@@ -95,6 +96,14 @@ func action(ctx *cli.Context) error {
 		return err
 	}
 	defer gamelistReader.Close()
+
+	if gamelistReader == os.Stdin && isatty.IsTerminal(gamelistReader.Fd()) {
+		if err := cli.ShowAppHelp(ctx); err != nil {
+			return cli.Exit(err.Error(), 1)
+		}
+
+		return cli.Exit("", 1)
+	}
 
 	// Determine output writer
 	outputWriter, err := getWriter(ctx.String("output"))
