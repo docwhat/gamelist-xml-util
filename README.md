@@ -16,3 +16,10 @@
 1. Rename the binary to `gamelist-cli`
 1. Make it executable. e.g., `chmod +x gamelist-cli`
 1. File bugs and PRs at [the GitHub repo](https://github.com/docwhat/gamelist-xml-util).
+
+## Contributing
+
+1. Fork it.
+2. Clone it.
+3. Run `./script/bootstrap`, fix any issues and re-run until it works.
+4. Have fun!
