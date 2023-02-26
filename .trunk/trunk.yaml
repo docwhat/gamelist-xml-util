@@ -1,11 +1,14 @@
 version: 0.1
+
 cli:
   version: 1.5.1
+
 plugins:
   sources:
     - id: trunk
       ref: v0.0.12
       uri: https://github.com/trunk-io/plugins
+
 lint:
   enabled:
     - actionlint@1.6.23
@@ -18,10 +21,12 @@ lint:
     - prettier@2.8.4
     - shellcheck@0.9.0
     - shfmt@3.5.0
+
 runtimes:
   enabled:
     - go@1.20.1
     - node@18.12.1
+
 actions:
   enabled:
     - go-mod-tidy
