@@ -1,3 +1,5 @@
+name: Populate Trunk Cache
+
 on:
   push:
     branches: [main]
