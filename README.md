@@ -17,6 +17,11 @@
 1. Make it executable. e.g., `chmod +x gamelist-cli`
 1. File bugs and PRs at [the GitHub repo](https://github.com/docwhat/gamelist-xml-util).
 
+## Installing from source
+
+1. Git clone from [the GitHub repo](https://github.com/docwhat/gamelist-xml-util).
+1. Run `./script/install-local`
+
 ## Contributing
 
 1. Fork it.

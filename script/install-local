@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -euo pipefail
+
+rootdir="$(git rev-parse --show-toplevel)"
+cd "$rootdir"
+
+version=$(git describe --dirty --always --tag)
+echo "Version $version"
+
+for cmd_dir in ./cmd/*; do
+	if [[ -d $cmd_dir ]]; then
+		cmd=$(basename "$cmd_dir")
+		echo "Building $cmd..."
+		go install \
+			-ldflags="-X 'main.version=$version'" \
+			"$cmd_dir"
+	fi
+done
+
+# EOF

@@ -4,7 +4,7 @@ before:
     - go mod tidy
 builds:
   - id: "cli"
-    main: "./cmd/cli"
+    main: "./cmd/gamelist-cli"
     binary: "gamelist-cli"
     env:
       - CGO_ENABLED=0
