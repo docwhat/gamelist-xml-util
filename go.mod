@@ -6,7 +6,7 @@ require (
 	github.com/kjk/lzmadec v0.0.0-20210713164611-19ac3ee91a71
 	github.com/mattn/go-isatty v0.0.19
 	github.com/stretchr/testify v1.8.4
-	github.com/urfave/cli/v2 v2.25.5
+	github.com/urfave/cli/v2 v2.25.7
 )
 
 require (
